@@ -1,10 +1,53 @@
 import chess
 import chess.pgn
 import chess.engine
+import csv
+import os
 import math
-def analyze_pgn(pgn_file_path, stockfish_path):
+
+def load_eco_database(eco_directory):
+    """
+    Load all .tsv files from the provided directory into a dictionary.
+    Each key is an ECO code, and the value is a tuple of (Opening Name, Moves List).
+    """
+    eco_database = []
+    for filename in os.listdir(eco_directory):
+        if filename.endswith(".tsv"):
+            file_path = os.path.join(eco_directory, filename)
+            with open(file_path, "r", encoding="utf-8") as tsvfile:
+                reader = csv.reader(tsvfile, delimiter="\t")
+                for row in reader:
+                    if len(row) >= 3:  # Ensure the row has ECO code, name, and moves
+                        eco_database.append({
+                            "eco": row[0],
+                            "name": row[1],
+                            "moves": row[2].split()  # Convert moves into a list
+                        })
+    return eco_database
+
+def get_opening_name_and_code(board, eco_database):
+    """
+    Determine the opening name and ECO code based on the game's moves using the loaded ECO database.
+    """
+    for opening in eco_database:
+        temp_board = chess.Board()
+        for move_uci in opening["moves"]:
+            move = chess.Move.from_uci(move_uci)
+            if move in temp_board.legal_moves:
+                temp_board.push(move)
+            else:
+                break
+            # Check if the board position matches
+            if temp_board.board_fen() == board.board_fen():
+                return opening["eco"], opening["name"]
+    return "Unknown", "Unknown"
+
+def analyze_pgn(pgn_file_path, stockfish_path, eco_directory):
     results = {}
-    
+
+    # Load ECO database
+    eco_database = load_eco_database(eco_directory)
+
     # Open the PGN file
     with open(pgn_file_path, 'r') as pgn_file:
         game = chess.pgn.read_game(pgn_file)
@@ -20,42 +63,25 @@ def analyze_pgn(pgn_file_path, stockfish_path):
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
     
     # Initialize analysis variables
-    white_castled = "Not Castled"
-    black_castled = "Not Castled"
+    board = game.board()
     move_count = 0
     draw_type = None
     winning_method = None
-    resignation_analysis = None  # Analysis of resignation decision
-    
-    board = game.board()
+    resignation_analysis = None
     
     # Analyze moves
     for move in game.mainline_moves():
         move_count += 1
-
-        # Detect castling moves
-        if board.is_kingside_castling(move):
-            if board.turn:  # If it's black's turn after move, white castled
-                white_castled = "Short"
-            else:  # If it's white's turn after move, black castled
-                black_castled = "Short"
-        elif board.is_queenside_castling(move):
-            if board.turn:  # If it's black's turn after move, white castled
-                white_castled = "Long"
-            else:  # If it's white's turn after move, black castled
-                black_castled = "Long"
-        
         board.push(move)
 
-    # Assign castling results
-    results['WhiteCastling'] = white_castled
-    results['BlackCastling'] = black_castled
+    # Determine opening name and ECO code
+    eco_code, opening_name = get_opening_name_and_code(board, eco_database)
+    results['OpeningName'] = opening_name
+    results['ECOCode'] = eco_code
 
     # Determine game result
     result = game.headers.get("Result", "Unknown")
- 
     if result == "1/2-1/2":
-        
         if board.is_stalemate():
             draw_type = "Stalemate"
         elif board.is_repetition():
@@ -64,20 +90,19 @@ def analyze_pgn(pgn_file_path, stockfish_path):
             draw_type = "Insufficient Material"
         else:
             draw_type = "Agreement"
-    
- 
+
     if result in ["1-0", "0-1"]:
-        if board.is_checkmate(): 
+        if board.is_checkmate():
             winning_method = "Checkmate"
         else:
             winning_method = "Resignation"
-            evaluation = engine.analyse(board, chess.engine.Limit(time=1))  
+            evaluation = engine.analyse(board, chess.engine.Limit(time=1))
             score = evaluation['score'].relative
             
             if score.is_mate():
                 resignation_analysis = "Correct, opponent has a forced mate."
             else:
-                score_value = score.score(mate_score=10000) 
+                score_value = score.score(mate_score=10000)
                 if (result == "1-0" and score_value < 0) or (result == "0-1" and score_value > 0):
                     resignation_analysis = "Incorrect, resigning side was better."
                 elif abs(score_value) < 50:
@@ -93,10 +118,10 @@ def analyze_pgn(pgn_file_path, stockfish_path):
 
     return results
 
+# Example usage
+pgn_file = "PgnFiles/Kirilmaz.pgn"
+stockfish_path = "stockfish.exe"
+eco_directory = "OpeningCodes/tsv"  # Path to the folder containing a.tsv, b.tsv, c.tsv, etc.
 
-
-pgn_file = "PgnFiles/stalemate.pgn" 
-stockfish_path = "stockfish.exe" 
-
-game_analysis = analyze_pgn(pgn_file, stockfish_path)
+game_analysis = analyze_pgn(pgn_file, stockfish_path, eco_directory)
 print(game_analysis)
