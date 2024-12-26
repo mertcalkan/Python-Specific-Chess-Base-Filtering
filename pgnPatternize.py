@@ -20,7 +20,7 @@ def load_eco_database(eco_directory):
                     if len(row) >= 3:
                         board = chess.Board()
                         moves = []
-                        # Remove move numbers and clean up spaces
+                        
                         san_moves = row[2].strip().replace("\n", " ").replace("  ", " ").split(" ")
                         san_moves = [move for move in san_moves if not move.endswith(".")]
                         for move in san_moves:
@@ -29,7 +29,7 @@ def load_eco_database(eco_directory):
                                 moves.append(uci_move)
                             except ValueError:
                                 print(f"Invalid move '{move}' in ECO '{row[0]} - {row[1]}'")
-                                break  # Skip invalid openings
+                                break  # gereksiz açılışları atla..
                         if not moves:
                             print(f"Skipping ECO '{row[0]} - {row[1]}' due to empty moves.")
                             continue
@@ -46,7 +46,7 @@ def get_opening_name_and_code(board, eco_database):
     """
     Determine the opening name and ECO code based on the game's moves using the loaded ECO database.
     """
-    game_moves = [move.uci() for move in board.move_stack]
+    game_moves = [move.uci() for move in board.move_stack]               
     print("Game Moves (UCI):", game_moves)
 
     for opening in eco_database:
@@ -55,7 +55,7 @@ def get_opening_name_and_code(board, eco_database):
         print("Opening Name:", opening["name"])
         print("Opening Moves (UCI):", opening_moves)
 
-        # Eşleşme kontrolü
+        # açılışların eşleşme kontrolü
         if game_moves[:len(opening_moves)] == opening_moves:
             print("Matched Opening:", opening["eco"], opening["name"])
             return opening["eco"], opening["name"]
@@ -90,34 +90,34 @@ def analyze_pgn(pgn_file_path, stockfish_path, eco_directory):
     move_count = 0
     draw_type = None
     winning_method = None
-    resignation_analysis = None  # Analysis of resignation decision
+    resignation_analysis = None 
     
     board = game.board()
     
-    # Analyze moves
+    # Hamle ilerleyişi
     for move in game.mainline_moves():
         move_count += 1
 
-        # Detect castling moves
+        # ROK Tespiti
         if board.is_kingside_castling(move):
-            if board.turn:  # If it's black's turn after move, white castled
+            if board.turn:
                 white_castled = "Short"
-            else:  # If it's white's turn after move, black castled
+            else:  
                 black_castled = "Short"
         elif board.is_queenside_castling(move):
-            if board.turn:  # If it's black's turn after move, white castled
+            if board.turn:  
                 white_castled = "Long"
-            else:  # If it's white's turn after move, black castled
+            else:  
                 black_castled = "Long"
         
         board.push(move)
 
-    # Determine opening name and ECO code
+  
     eco_code, opening_name = get_opening_name_and_code(board, eco_database)
     results['OpeningName'] = opening_name
     results['ECOCode'] = eco_code
 
-    # Assign castling results
+    # rok durumlarını atama
     results['WhiteCastling'] = white_castled
     results['BlackCastling'] = black_castled
     result = game.headers.get("Result", "Unknown")
@@ -158,10 +158,10 @@ def analyze_pgn(pgn_file_path, stockfish_path, eco_directory):
 
     return results
 
-# Example usage
-pgn_file = "PgnFiles/tal_kasparov.pgn"  # Path to the PGN file
-stockfish_path = "stockfish.exe"  # Path to the Stockfish engine
-eco_directory = "OpeningCodes/tsv"  # Path to the directory containing .tsv files
+# örnek senaryo
+pgn_file = "PgnFiles/tal_kasparov.pgn" 
+stockfish_path = "stockfish.exe"  
+eco_directory = "OpeningCodes/tsv"
 
 game_analysis = analyze_pgn(pgn_file, stockfish_path, eco_directory)
 print(game_analysis)
