@@ -25,6 +25,7 @@ def analyze_pgn(pgn_file_path, stockfish_path):
     move_count = 0
     draw_type = None
     winning_method = None
+    resignation_analysis = None  # Analysis of resignation decision
     
     board = game.board()
     
@@ -52,13 +53,9 @@ def analyze_pgn(pgn_file_path, stockfish_path):
 
     # Determine game result
     result = game.headers.get("Result", "Unknown")
-    if result == "1-0":
-        results['Winner'] = "White"
-    elif result == "0-1":
-        results['Winner'] = "Black"
-    elif result == "1/2-1/2":
-        results['Winner'] = "Draw"
-        # Check type of draw
+ 
+    if result == "1/2-1/2":
+        
         if board.is_stalemate():
             draw_type = "Stalemate"
         elif board.is_repetition():
@@ -68,28 +65,38 @@ def analyze_pgn(pgn_file_path, stockfish_path):
         else:
             draw_type = "Agreement"
     
-    # If the game ended with a winner, determine the winning method
+ 
     if result in ["1-0", "0-1"]:
-        last_move = board.pop()
-        if board.is_checkmate():
+        if board.is_checkmate(): 
             winning_method = "Checkmate"
         else:
             winning_method = "Resignation"
-        board.push(last_move)  # Restore the board state
+            evaluation = engine.analyse(board, chess.engine.Limit(time=1))  
+            score = evaluation['score'].relative
+            
+            if score.is_mate():
+                resignation_analysis = "Correct, opponent has a forced mate."
+            else:
+                score_value = score.score(mate_score=10000) 
+                if (result == "1-0" and score_value < 0) or (result == "0-1" and score_value > 0):
+                    resignation_analysis = "Incorrect, resigning side was better."
+                elif abs(score_value) < 50:
+                    resignation_analysis = "Incorrect, the position was close to a draw."
+                else:
+                    resignation_analysis = "Correct, position was losing."
     
-    results['TotalMoves'] = math.floor(move_count / 2) 
+    results['TotalMoves'] = math.floor(move_count / 2)
     results['DrawType'] = draw_type
     results['WinningMethod'] = winning_method
-
-    # Close the Stockfish engine
+    results['ResignationAnalysis'] = resignation_analysis
     engine.quit()
 
     return results
 
 
-# Example usage
-pgn_file = "PgnFiles/tal_kasparov.pgn"  # Replace with your PGN file path
-stockfish_path = "stockfish.exe"  # Replace with your Stockfish path
+
+pgn_file = "PgnFiles/stalemate.pgn" 
+stockfish_path = "stockfish.exe" 
 
 game_analysis = analyze_pgn(pgn_file, stockfish_path)
 print(game_analysis)
