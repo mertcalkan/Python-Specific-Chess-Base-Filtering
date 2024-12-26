@@ -1,7 +1,6 @@
 import chess
 import chess.pgn
 import chess.engine
-import os
 import math
 def analyze_pgn(pgn_file_path, stockfish_path):
     results = {}
@@ -21,8 +20,8 @@ def analyze_pgn(pgn_file_path, stockfish_path):
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
     
     # Initialize analysis variables
-    white_castling = {"short": False, "long": False}
-    black_castling = {"short": False, "long": False}
+    white_castled = "Not Castled"
+    black_castled = "Not Castled"
     move_count = 0
     draw_type = None
     winning_method = None
@@ -32,24 +31,24 @@ def analyze_pgn(pgn_file_path, stockfish_path):
     # Analyze moves
     for move in game.mainline_moves():
         move_count += 1
-        board.push(move)
-        
-        # Check castling
-        if board.is_castling(move):
-            if board.turn:  # True = White's turn after move
-                if move.to_square in [chess.G1, chess.G8]:  # Short castling
-                    white_castling["short"] = True
-                elif move.to_square in [chess.C1, chess.C8]:  # Long castling
-                    white_castling["long"] = True
-            else:
-                if move.to_square in [chess.G1, chess.G8]:
-                    black_castling["short"] = True
-                elif move.to_square in [chess.C1, chess.C8]:
-                    black_castling["long"] = True
 
-    # Simplify castling results
-    results['WhiteCastling'] = "Short" if white_castling["short"] else "Long" if white_castling["long"] else "Not Castled"
-    results['BlackCastling'] = "Short" if black_castling["short"] else "Long" if black_castling["long"] else "Not Castled"
+        # Detect castling moves
+        if board.is_kingside_castling(move):
+            if board.turn:  # If it's black's turn after move, white castled
+                white_castled = "Short"
+            else:  # If it's white's turn after move, black castled
+                black_castled = "Short"
+        elif board.is_queenside_castling(move):
+            if board.turn:  # If it's black's turn after move, white castled
+                white_castled = "Long"
+            else:  # If it's white's turn after move, black castled
+                black_castled = "Long"
+        
+        board.push(move)
+
+    # Assign castling results
+    results['WhiteCastling'] = white_castled
+    results['BlackCastling'] = black_castled
 
     # Determine game result
     result = game.headers.get("Result", "Unknown")
@@ -78,7 +77,7 @@ def analyze_pgn(pgn_file_path, stockfish_path):
             winning_method = "Resignation"
         board.push(last_move)  # Restore the board state
     
-    results['TotalMoves'] = math.floor(move_count /2)
+    results['TotalMoves'] = math.floor(move_count / 2) 
     results['DrawType'] = draw_type
     results['WinningMethod'] = winning_method
 
