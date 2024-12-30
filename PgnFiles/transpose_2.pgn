@@ -1,0 +1,16 @@
+[Event "?"]
+[Site "?"]
+[Date "2011.09.12"]
+[Round "?"]
+[White "Slav"]
+[Black "?"]
+[Result "*"]
+[ECO "D10"]
+[Annotator "Doe,John"]
+[Plycount "4"]
+[Sourcedate "2011.09.12"]
+[Link "https://www.chess.com/analysis/game/pgn/4ddHFio31p?tab=analysis"]
+
+1. d4 (1. c4 {English Opening} 1... c6 2. d4 {Transposing into the actual Queen
+pawn opening} 2... d5 {and the same position has occured using a different mover
+order}) 1... d5 2. c4 c6 {Slav Defense} *
