@@ -4,7 +4,7 @@ from stockfish_utils import connect_stockfish, disconnect_stockfish
 from basic_analysis import analyze_game
 from fork_analysis import analyze_forks
 def main():
-    pgn_file = "PgnFiles/fork_example1.pgn"
+    pgn_file = "PgnFiles/fischer_tal_1959.pgn"
     stockfish_path = "stockfish.exe"
     eco_directory = "OpeningCodes/tsv"
 
