@@ -15,7 +15,7 @@ def analyze_game(game, engine, eco_database):
     move_count = 0
     white_castled = "Not Castled"
     black_castled = "Not Castled"
-
+    is_miniature = "No"
     for move in game.mainline_moves():
         move_count += 1
 
@@ -67,6 +67,9 @@ def analyze_game(game, engine, eco_database):
             winning_method = "Resignation"
         board.push(last_move)  
         results['WinningMethod'] = winning_method
+        if move_count // 2 <= 25:
+            is_miniature = "Yes"
+        results['Miniature'] = is_miniature
         if score.is_mate():
             mate_distance = score.mate()
             if not board.turn:

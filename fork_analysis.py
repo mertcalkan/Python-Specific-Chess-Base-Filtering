@@ -33,7 +33,7 @@ def detect_fork_on_move(board, move):
                 is_pinned = board.is_pinned(target_piece.color, square)
                 # Check if the target square is protected
                 is_protected_status = is_protected(board, square, attacking_piece.color)
-                is_forcing = target_piece.piece_type == chess.KING  # Forcing move
+                is_forcing = target_piece.piece_type == chess.KING  
                 
                 # Add target only if it's not pinned and meets other conditions
                 if not is_pinned and (not is_protected_status or is_forcing):

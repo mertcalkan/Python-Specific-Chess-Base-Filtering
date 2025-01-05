@@ -52,6 +52,7 @@ def create_variation_tree(node, board, depth, time_control, rating, is_player_tu
 
     if is_player_turn:
         # Player's move (White)
+        
         best_move = get_best_move(stats)
         if best_move is None:
             return
