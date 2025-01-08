@@ -81,7 +81,7 @@ def analyze_checks(game):
 
         if board.is_check():
             # Debug: Print the move and the check
-            print(f"Check detected: {move}, Turn: {'White' if board.turn else 'Black'}")
+            # print(f"Check detected: {move}, Turn: {'White' if board.turn else 'Black'}")
 
             if not board.turn:  # White gave check
                 white_checks += 1

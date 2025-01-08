@@ -1,0 +1,28 @@
+[Event "Immortal Zugzwang Game"]
+[Site "Copenhagen"]
+[Date "1923.??.??"]
+[Round "?"]
+[White "Friedrich S&auml;emisch  "]
+[Black "Aron Nimzowitsch"]
+[Result "0-1"]
+[ECO "E17"]
+[Link "https://www.chess.com/analysis?tab=analysis"]
+
+{(Notes by Nimzowitsch.)} 1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. g3 Bb7 5. Bg2 Be7
+{Queen's Indian Defense.} 6. Nc3 O-O 7. O-O d5 8. Ne5 c6 {Safeguards the
+position.} 9. cxd5 $6 cxd5 10. Bf4 a6 {Protects the outpost station c4, i.e., by
+...a6 and ...b5.} 11. Rc1 b5 12. Qb3 Nc6 {The ghost $1 With noiseless steps he
+presses on towards c4.} 13. Nxc6 {Samisch sacrifices two tempi (exchange of the
+tempo-eating Knight on e5 for the Knight which is almost undeveloped) merely to
+be rid of the ghost.} 13... Bxc6 14. h3 $2 Qd7 15. Kh2 Nh5 {I could have supplied
+him with as yet a second ghost by ...Qb7 and
+...Knight&ndash;d7&ndash;b6&ndash;c4, but I wished to turn my attention to the
+King's side.} 16. Bd2 f5 $1 17. Qd1 b4 $1 18. Nb1 Bb5 19. Rg1 Bd6 20. e4 fxe4 $1 {This
+sacrifice, which has a quite surprising effect, is based upon the following
+sober calculation: two Pawns and the seventh rank and an enemy Queen's wing
+which cannot be disentangled - all this for only one piece $1} 21. Qxh5 Rxf2 22.
+Qg5 Raf8 23. Kh1 R8f5 24. Qe3 Bd3 25. Rce1 h6 $3 {A brilliant move which
+announces the Zugzwang. White has not a move left. If, e.g., Kh2 or g4, then
+R5f3. Black can now make waiting moves with his King, and White must,
+willy-nilly, eventually throw himself upon the sword. 0-1.} 26. Rc1 (26. a3 R5f3
+27. Bxf3 Rxf3) 26... Re2 27. a4 0-1

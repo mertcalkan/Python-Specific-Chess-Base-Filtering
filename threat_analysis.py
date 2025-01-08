@@ -1,56 +1,59 @@
 import chess
 import chess.engine
-import chess.pgn
 
-def analyze_threat_moves(game, engine_path):
+PIECE_VALUES = {
+    chess.PAWN: 1,
+    chess.KNIGHT: 3,
+    chess.BISHOP: 3,
+    chess.ROOK: 5,
+    chess.QUEEN: 9,
+    chess.KING: float('inf')
+}
+
+def is_material_gain_threat(board, move, engine):
     """
-    Analyze threat moves in a chess game.
+    Check if a move creates a threat for material gain.
     """
-    # Initialize board and engine
-    board = game.board()
-    engine = chess.engine.SimpleEngine.popen_uci(engine_path)
+    board.push(move)  # Apply the move
+    threats = []
 
-    white_threat_moves = []
-    black_threat_moves = []
-    white_threat_count = 0
-    black_threat_count = 0
-    is_threat = False
-    for move in game.mainline_moves():
-        # Apply the move to the board
-        board.push(move)
-        
-        # Analyze the position after the move but give the turn back to the moving side
-        with engine.analysis(board, chess.engine.Limit(depth=20)) as analysis:
-            info = analysis.get()
-            if "score" in info:
-                score = info["score"].relative
-                if score.is_mate():
-                    is_threat = True  # Mating threat
-                else:
-                    advantage = score.score()
-                    if advantage > 300:  # Significant advantage (for White)
-                        is_threat = board.turn  # If White's turn, it was a Black threat move
-                    elif advantage < -300:  # Significant advantage (for Black)
-                        is_threat = not board.turn  # If Black's turn, it was a White threat move
-                    else:
-                        is_threat = False
+    # Analyze the current board position after the move
+    for square, piece in board.piece_map().items():
+        if piece.color != board.turn:  # Opponent's pieces
+            defenders = board.attackers(not piece.color, square)
+            attackers = board.attackers(piece.color, square)
 
-        # Record the threat move
-        if is_threat:
-            move_san = board.san(move)
-            if board.turn:  # Black's turn, White's last move was a threat
-                white_threat_moves.append(move_san)
-                white_threat_count += 1
-            else:  # White's turn, Black's last move was a threat
-                black_threat_moves.append(move_san)
-                black_threat_count += 1
+            if attackers and (not defenders or len(attackers) > len(defenders)):
+                # Check if the attacked piece can be captured for material gain
+                piece_value = PIECE_VALUES[piece.piece_type]
+                defender_value = min(
+                    (PIECE_VALUES[board.piece_at(defender).piece_type] for defender in defenders),
+                    default=float('inf')  # If no defenders, set to infinity
+                )
+                if piece_value > defender_value:
+                    threats.append((square, piece_value, defender_value))
 
-    engine.quit()
+    board.pop()  # Undo the move
+    return threats
 
-    return {
-        "white_threat_count": white_threat_count,
-        "black_threat_count": black_threat_count,
-        "white_threat_moves": white_threat_moves,
-        "black_threat_moves": black_threat_moves,
-    }
+def analyze_game_material_threats(game, stockfish_path):
+    """
+    Analyze a game to find moves that create material gain threats.
+    """
+    with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
+        board = game.board()
+        threats = {"white_threats": [], "black_threats": []}
+
+        for move in game.mainline_moves():
+            material_threats = is_material_gain_threat(board, move, engine)
+
+            if material_threats:
+                if board.turn:  # Black's move
+                    threats["black_threats"].append((board.san(move), material_threats))
+                else:  # White's move
+                    threats["white_threats"].append((board.san(move), material_threats))
+
+            board.push(move)
+
+    return threats
 
