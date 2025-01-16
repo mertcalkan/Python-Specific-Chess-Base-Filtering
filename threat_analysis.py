@@ -17,18 +17,18 @@ def is_material_gain_threat(board, move, engine):
     board.push(move)  # Apply the move
     threats = []
 
-    # Analyze the current board position after the move
+    # Analyze the current board position after the move...
     for square, piece in board.piece_map().items():
         if piece.color != board.turn:  # Opponent's pieces
             defenders = board.attackers(not piece.color, square)
             attackers = board.attackers(piece.color, square)
 
             if attackers and (not defenders or len(attackers) > len(defenders)):
-                # Check if the attacked piece can be captured for material gain
+                
                 piece_value = PIECE_VALUES[piece.piece_type]
                 defender_value = min(
                     (PIECE_VALUES[board.piece_at(defender).piece_type] for defender in defenders),
-                    default=float('inf')  # If no defenders, set to infinity
+                    default=float('inf')  
                 )
                 if piece_value > defender_value:
                     threats.append((square, piece_value, defender_value))

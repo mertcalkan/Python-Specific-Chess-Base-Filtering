@@ -5,7 +5,6 @@ from basic_analysis import analyze_game
 from fork_analysis import analyze_forks
 from check_analysis import analyze_checks
 from en_passant import count_en_passant_moves
-from pawn_structure import analyze_doubled_tripled_pawns
 from threat_analysis import analyze_game_material_threats
 from zugzwang_analysis import find_zugzwang_positions
 def main():
